@@ -83,9 +83,6 @@ class DatasetBase:
         self._lab2cname_test, self._classnames_test = self.get_lab2cname(test)
         print('test = ' ,self._lab2cname_test)
 
-        # self._domlab2dname, self._domains = self.get_lab2domains(train_x)
-        # self._domains = self.get_domains(train_x)
-        # self.targets_x = self.get_labels(train_x)
         self._domains = self.get_domains(train)
         self.targets_x = self.get_labels(train)
 
@@ -184,24 +181,6 @@ class DatasetBase:
         classnames = [mapping[label] for label in labels]
         return mapping, classnames
 
-    # @staticmethod
-    # def get_lab2domains(data_source):
-    #     """Get a label-to-domainname mapping (dict).
-
-    #     Args:
-    #         data_source (list): a list of Datum objects.
-    #     """
-    #     if not hasattr(data_source[0], '_dom_label'):
-    #         return None, get_domains(data_source)
-    #     container = set()
-    #     for item in data_source:
-    #         container.add((item.dom_label, item.domain))
-    #     mapping = {label: classname for label, classname in container}
-    #     labels = list(mapping.keys())
-    #     labels.sort()
-    #     classnames = [mapping[label] for label in labels]
-    #     # import pdb; pdb.set_trace()
-    #     return mapping, classnames
 
 
     def check_input_domains(self, source_domains, target_domains):

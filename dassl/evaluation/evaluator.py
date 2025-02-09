@@ -57,7 +57,7 @@ class Classification(EvaluatorBase):
     def process(self, mo, gt, len_dom=0):
         # mo (torch.Tensor): model output [batch, num_classes]
         # gt (torch.LongTensor): ground truth [batch]
-        # import pdb; pdb.set_trace()
+        
         mo = torch.softmax(mo.detach()/1, dim=-1)
         max_prob, pred = mo.max(1)
 
@@ -74,7 +74,7 @@ class Classification(EvaluatorBase):
         if self._per_class_res_thres is not None:
             mask = max_prob.ge(self.conf_thre).float() #pseudo-label utilized
             matches_thres = matches * mask #pseudo-label utilized right
-            # import pdb; pdb.set_trace()
+            
 
         self._correct += int(matches.sum().item())
         self._total += gt.shape[0]
@@ -149,7 +149,7 @@ class Classification(EvaluatorBase):
                     # print(res_thres)
                     # print(correct_thres)
                     # print(total_thres)
-                    # import pdb; pdb.set_trace()
+                    
 
                     if total_thres:
                         acc_thres = 100.0 * correct_thres / total_thres
@@ -215,7 +215,7 @@ class Classification(EvaluatorBase):
         total = statics['total']
         acc = statics['acc']
         correct = statics['correct']
-        # import pdb; pdb.set_trace()
+        
 
         sorted_id = sorted(range(len(acc)), key=lambda k: acc[k], reverse=True)  # 元素索引序列：降序
         classname = [classname[i] for i in sorted_id]
@@ -235,21 +235,18 @@ class Classification(EvaluatorBase):
 
     def draw(self, statics, domain):
         from matplotlib import pyplot as plt
-        # from matplotlib import fong_manager
         x = statics['label']
 
         total = statics['total_thres']
         correct = statics['correct_thres']
         acc = statics['acc_thres']
-        # import pdb; pdb.set_trace()
 
         # sort
         sorted_id = sorted(range(len(total)), key=lambda k:total[k], reverse=True)
         x = np.array(x)[sorted_id]
         total = np.array(total)[sorted_id]
         correct = np.array(correct)[sorted_id]
-        acc = np.array(acc)[sorted_id]
-        # import pdb; pdb.set_trace()
+        acc = np.array(acc)[sorted_id]       
 
         mean_acc = np.mean(acc)
         mean_total = np.mean(total)

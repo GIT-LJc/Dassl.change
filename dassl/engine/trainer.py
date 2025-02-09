@@ -249,7 +249,7 @@ class TrainerBase:
         self.start_epoch = start_epoch
         self.max_epoch = max_epoch
 
-        # import pdb; pdb.set_trace()
+        
         self.before_train()
 
         for self.epoch in range(self.start_epoch, self.max_epoch):
@@ -300,7 +300,7 @@ class TrainerBase:
 
     def model_update(self, names=None):
         names = self.get_model_names(names)
-        # import pdb; pdb.set_trace()
+        
         for name in names:
             if self._optims[name] is not None:
                 self._optims[name].step()
@@ -319,7 +319,6 @@ class SimpleTrainer(TrainerBase):
         self.check_cfg(cfg)
 
 
-        print('cuda========================', torch.cuda.is_available(), cfg.USE_CUDA)
         if torch.cuda.is_available() and cfg.USE_CUDA:
             self.device = torch.device("cuda")
         else:
@@ -332,7 +331,7 @@ class SimpleTrainer(TrainerBase):
 
         self.cfg = cfg
         self.build_data_loader()
-        # import pdb; pdb.set_trace()
+        
         self.build_model()
         self.evaluator = build_evaluator(cfg, lab2cname=self.lab2cname)
         self.best_result = -np.inf
@@ -365,10 +364,10 @@ class SimpleTrainer(TrainerBase):
         self.num_classes = dm.num_classes
         self.num_source_domains = dm.num_source_domains
         self.lab2cname = dm.lab2cname  # dict {label: classname}
-        # import pdb; pdb.set_trace()
+        
         self.dm = dm
 
-        # import pdb; pdb.set_trace()
+        
 
     def build_model(self):
         """Build and register model.
@@ -382,7 +381,7 @@ class SimpleTrainer(TrainerBase):
 
         print("Building model")
         self.model = SimpleNet(cfg, cfg.MODEL, self.num_classes)
-        # import pdb; pdb.set_trace()
+        
         if cfg.MODEL.INIT_WEIGHTS:
             load_pretrained_weights(self.model, cfg.MODEL.INIT_WEIGHTS)
         self.model.to(self.device)
@@ -413,7 +412,7 @@ class SimpleTrainer(TrainerBase):
         # Remember the starting time (for computing the elapsed time)
         self.time_start = time.time()
         print('before train')
-        # import pdb; pdb.set_trace()
+        
 
 
     def after_train(self):
@@ -439,7 +438,7 @@ class SimpleTrainer(TrainerBase):
     def after_epoch(self):
         last_epoch = (self.epoch + 1) == self.max_epoch
         do_test = not self.cfg.TEST.NO_TEST
-        # import pdb; pdb.set_trace()
+        
 
         meet_checkpoint_freq = (
             (self.epoch + 1) % self.cfg.TRAIN.CHECKPOINT_FREQ == 0
@@ -450,7 +449,6 @@ class SimpleTrainer(TrainerBase):
         # if do_test and (self.epoch%5==0):
         if do_test:
             curr_result = self.test(split="val")
-            # import pdb; pdb.set_trace()
             is_best = curr_result > self.best_result
             if is_best:
                 self.best_result = curr_result
@@ -461,80 +459,9 @@ class SimpleTrainer(TrainerBase):
                     model_name="model-best.pth.tar"
                 )
 
-        # if meet_checkpoint_freq or last_epoch:
         self.save_model(self.epoch, self.output_dir, model_name="checkpoint.pth.tar")
 
 
-    # @torch.no_grad()
-    # def test(self, split=None):
-    #     """A generic testing pipeline."""
-    #     self.set_model_mode("eval")
-    #     self.evaluator.reset()
-    #     import copy
-    #     cur_evaluator = copy.deepcopy(self.evaluator)
- 
-    #     if split is None:
-    #         split = self.cfg.TEST.SPLIT
-
-    #     # if split == "val" and self.val_loader is not None:
-    #     #     data_loader = self.val_loader
-    #     if split == "val" and self.test_loader is not None:
-    #         data_loader = self.test_loader
-    #     else:
-    #         split = "test"  # in case val_loader is None
-    #         data_loader = self.test_loader
-
-    #     print(f"Evaluate on the *{split}* set")
-    #     # print(type(data_loader), type(self.val_loader), type(self.test_loader))
-
-    #     # import pdb; pdb.set_trace()
-    #     len_dom = 0
-    #     # if self.cfg.DATASET.DOMAIN == 2:
-    #     #     len_dom = int( len(self.dm.dataset.classnames) / len(self.dm.dataset.domains) ) 
-    #     #     print('only care about the classification accuracy, without considering the domain accuracy!')
-
-    #     if type(data_loader) is dict:
-    #         for domain, loader in data_loader.items():
-    #             print(f'Test Accuracy on {domain}' )
-    #             cur_evaluator.reset()
-
-    #             for batch_idx, batch in enumerate(tqdm(loader)):
-    #                 input, label = self.parse_batch_test(batch)
-    #                 domlabel = None
-    #                 # domlabel = batch['domlabel'] 
-    #                 if self.cfg.TRAINER.DOMAIN_CLASSIFY:
-    #                     domlabel = batch['domlabel']    # upper bound 
-    #                 output = self.model_inference(input)
-    #                 # output = self.model_inference(input, domlabel)
-    #                 # import pdb; pdb.set_trace()
-    #                 self.evaluator.process(output, label, len_dom)
-    #                 cur_evaluator.process(output, label, len_dom)
-
-    #             results = self.evaluator.evaluate()
-    #             cur_results = cur_evaluator.evaluate()
-
-    #             for k, v in results.items():
-    #                 tag = f"{split}/{k}/{domain}"
-    #                 self.write_scalar(tag, v, self.epoch)
-    #         # return 0   # 仅涉及测试阶段，无需保存current result
-    #         return list(results.values())[0]
-
-    #     else:     
-    #         for batch_idx, batch in enumerate(tqdm(data_loader)):
-    #             input, label = self.parse_batch_test(batch)
-    #             domlabel = None
-    #             # domlabel = batch['domlabel'] 
-    #             # import pdb; pdb.set_trace()
-    #             output = self.model_inference(input)
-    #             self.evaluator.process(output, label, len_dom)
-
-    #         results = self.evaluator.evaluate()
-
-    #         for k, v in results.items():
-    #             tag = f"{split}/{k}"
-    #             self.write_scalar(tag, v, self.epoch)
-
-    #         return list(results.values())[0]
 
     @torch.no_grad()
     def test(self, split=None):
@@ -557,35 +484,21 @@ class SimpleTrainer(TrainerBase):
 
         print(f"Evaluate on the *{split}* set")
 
-        # import pdb; pdb.set_trace()
         len_dom = 0
-        # if self.cfg.DATASET.DOMAIN == 2:
-        #     len_dom = int( len(self.dm.dataset.classnames) / len(self.dm.dataset.domains) ) 
-        #     print('only care about the classification accuracy, without considering the domain accuracy!')
 
         if type(data_loader) is dict:
             accuracys = defaultdict(list)
             for domain, loader in data_loader.items():
                 print(f'Test Accuracy on {domain}' )
                 cur_evaluator.reset()
-                count = 0
-                all_count = 0
                 for batch_idx, batch in enumerate(tqdm(loader)):
                     input, label = self.parse_batch_test(batch)
                     domlabel = None
-                    count += sum(label ==65)
-                    all_count += label.shape[0]
-                    # if self.cfg.TRAINER.DOMAIN_CLASSIFY:
-                    #     domlabel = batch['domlabel']    # upper bound 
-                    # domlabel = batch['domlabel']    # upper bound 
-                    # output = self.model_inference(input, domlabel)
+         
                     output = self.model_inference(input)
                     self.evaluator.process(output, label, len_dom)
                     cur_evaluator.process(output, label, len_dom)
-                # import pdb; pdb.set_trace()
-
-                # results = self.evaluator.evaluate()
-                # import pdb; pdb.set_trace()
+               
                 cur_results = cur_evaluator.evaluate(domain=domain)
                 accuracys[domain] = float(format(cur_results['accuracy'], '.2f'))
                 
@@ -601,14 +514,11 @@ class SimpleTrainer(TrainerBase):
                 f"{accuracys} \n"
                 f"average results: {average:.2f}%"
             )
-            return 0   # 仅涉及测试阶段，无需保存current result
+            return 0   
 
         else:     
             for batch_idx, batch in enumerate(tqdm(data_loader)):
                 input, label = self.parse_batch_test(batch)
-                domlabel = None    # upper bound 
-                # domlabel = batch['domlabel']    # upper bound 
-                # output = self.model_inference(input, domlabel)
                 output = self.model_inference(input)
                 self.evaluator.process(output, label, len_dom)
 
@@ -659,14 +569,11 @@ class SimpleTrainer(TrainerBase):
 
     @torch.no_grad()
     def model_inference(self, input):
-        # import pdb; pdb.set_trace()
-        # if domlabel is not None:
-        #     return self.model(input, domlabel)
-        # return self.model(input)
+        
         output = self.model(input)
         if type(output) is tuple:
             # print('output is a tuple and return output[0]..')
-            return output[0]  # 默认返回第一个值
+            return output[0]  
         else:
             return output
             
@@ -789,12 +696,9 @@ class TrainerX(SimpleTrainer):
         self.num_batches = len(self.train_loader_x)
 
         end = time.time()
-        # for k in self.train_loader_x:
-        #     print(type(k))
+       
         for self.batch_idx, batch in enumerate(self.train_loader_x):
-            # import pdb; pdb.set_trace()
-            # print('batch', batch)
-
+            
             data_time.update(time.time() - end)
             loss_summary = self.forward_backward(batch)
             batch_time.update(time.time() - end)

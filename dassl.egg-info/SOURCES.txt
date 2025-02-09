@@ -28,7 +28,7 @@ dassl/data/datasets/dg/cifar_c.py
 dassl/data/datasets/dg/digit_single.py
 dassl/data/datasets/dg/digits_dg.py
 dassl/data/datasets/dg/office_home_dg.py
-dassl/data/datasets/dg/pacs.py
+dassl/data/datasets/dg/pacs_dg.py
 dassl/data/datasets/dg/vlcs.py
 dassl/data/datasets/dg/wilds/__init__.py
 dassl/data/datasets/dg/wilds/camelyon17.py
